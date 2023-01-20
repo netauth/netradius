@@ -3,7 +3,9 @@ package main
 import (
 	"log"
 	"os"
+	"os/signal"
 	"strings"
+	"syscall"
 
 	"github.com/hashicorp/go-hclog"
 	"github.com/netauth/netauth/pkg/netauth"
@@ -60,8 +62,21 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err := srvr.Serve(); err != nil {
-		appLogger.Error("Error serving", "error", err)
-		os.Exit(1)
+	go func() {
+		if err := srvr.Serve(); err != nil {
+			appLogger.Error("Error serving", "error", err)
+			os.Exit(1)
+		}
+	}()
+
+	// Sit here and wait for a signal to shutdown.
+	ch := make(chan os.Signal, 5)
+	signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM)
+	<-ch
+	appLogger.Info("Shutting down...")
+	if err := srvr.Shutdown(); err != nil {
+		appLogger.Error("Error during shutdown", "error", err)
+		os.Exit(2)
 	}
+	appLogger.Info("Goodbye!")
 }

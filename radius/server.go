@@ -1,6 +1,7 @@
 package radius
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/hashicorp/go-hclog"
@@ -43,7 +44,13 @@ func (s *Server) Serve() error {
 		Handler:      radius.HandlerFunc(s.handler),
 		SecretSource: radius.StaticSecretSource([]byte("secret")),
 	}
+	s.radsrv = server
 
 	s.log.Info("Serving Radius on :1812")
 	return server.ListenAndServe()
+}
+
+// Shutdown requests the underlying packetserver to shutdown smoothly.
+func (s *Server) Shutdown() error {
+	return s.radsrv.Shutdown(context.Background())
 }

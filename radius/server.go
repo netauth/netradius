@@ -42,7 +42,7 @@ func (s *Server) handler(w radius.ResponseWriter, r *radius.Request) {
 func (s *Server) Serve() error {
 	server := radius.PacketServer{
 		Handler:      radius.HandlerFunc(s.handler),
-		SecretSource: radius.StaticSecretSource([]byte("secret")),
+		SecretSource: radius.StaticSecretSource([]byte(s.secret)),
 	}
 	s.radsrv = server
 

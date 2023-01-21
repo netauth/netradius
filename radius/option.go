@@ -19,3 +19,11 @@ func WithNetAuth(n netauth) Option {
 		return nil
 	}
 }
+
+// WithSecret sets the RADIUS secret for the server.
+func WithSecret(scrt string) Option {
+	return func(s *Server) error {
+		s.secret = scrt
+		return nil
+	}
+}

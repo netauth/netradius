@@ -56,7 +56,11 @@ func main() {
 	}
 	nacl.SetServiceName("netradius")
 
-	srvr, err := radius.New(radius.WithLogger(appLogger), radius.WithNetAuth(nacl))
+	srvr, err := radius.New(
+		radius.WithLogger(appLogger),
+		radius.WithNetAuth(nacl),
+		radius.WithSecret(os.Getenv("NETAUTH_RADIUS_SECRET")),
+	)
 	if err != nil {
 		appLogger.Error("Error initializing", "error", err)
 		os.Exit(1)

@@ -13,6 +13,8 @@ type Server struct {
 	n   netauth
 
 	radsrv radius.PacketServer
+
+	secret string
 }
 
 // Option enables passing of various options to the server on startup.

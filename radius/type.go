@@ -22,4 +22,5 @@ type Option func(*Server) error
 
 type netauth interface {
 	AuthEntity(context.Context, string, string) error
+	EntityKVGet(context.Context, string, string) (map[string][]string, error)
 }

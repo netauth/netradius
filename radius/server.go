@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/go-hclog"
 	"layeh.com/radius"
 	"layeh.com/radius/rfc2865"
+	"layeh.com/radius/rfc2868"
 )
 
 // New initializes the server and prepares it for serving
@@ -34,8 +35,22 @@ func (s *Server) handler(w radius.ResponseWriter, r *radius.Request) {
 		w.Write(r.Response(radius.CodeAccessReject))
 		return
 	}
+
+	vals, err := s.n.EntityKVGet(r.Context(), username, "radius::vlan")
+	if err != nil {
+		s.log.Error("Error retrieving vlan information for entity", "entity", username, "error", err)
+	}
+
+	resp := r.Response(radius.CodeAccessAccept)
+
+	if vals != nil {
+		vlan := vals["radius::vlan"][0]
+		rfc2868.TunnelType_Add(resp, 0, 13) // Unifi uses an unspecified value :/
+		rfc2868.TunnelMediumType_Add(resp, 0, rfc2868.TunnelMediumType_Value_IEEE802)
+		rfc2868.TunnelPrivateGroupID_AddString(resp, 0, vlan)
+	}
 	s.log.Debug("Writing response", "code", radius.CodeAccessAccept, "client", r.RemoteAddr)
-	w.Write(r.Response(radius.CodeAccessAccept))
+	w.Write(resp)
 }
 
 // Serve serves the RADIUS services.
